@@ -14,10 +14,10 @@ public class PlayerController : MonoBehaviour {
 	private float smoothDampVarZ;
 	private float smoothDampVarX;
 	public float smoothingTime = 1f;
-	Rigidbody rigidBody;
+	public Rigidbody rb;
 
 	void Awake(){
-		rigidBody = GetComponent<Rigidbody> ();
+		rb = GetComponent<Rigidbody> ();
 	}
 
 	void Start(){
@@ -26,24 +26,26 @@ public class PlayerController : MonoBehaviour {
 		UpdateSensitivityText ();
 	}
 
-	void Update () {
+	void FixedUpdate () {
 
+
+		rb.MovePosition (transform.position + transform.forward * speed * Time.deltaTime);
 		//rigidBody.AddForce (transform.forward * speed);
-		transform.position += transform.forward * speed * Time.deltaTime;
+		//transform.position += transform.forward * speed * Time.deltaTime;
+
 
 
 		Quaternion rotation = transform.rotation;
-		rotation.z = Mathf.SmoothDampAngle (rotation.z, desireableRotationZ, ref smoothDampVarZ, smoothingTime);
-		rotation.x = Mathf.SmoothDampAngle (rotation.x, desireableRotationX, ref smoothDampVarX, smoothingTime);
-		transform.rotation = rotation;
+		Vector3 rotVec = new Vector3 ();
+		rotVec.z = Mathf.SmoothDampAngle (rotation.eulerAngles.z, desireableRotationZ, ref smoothDampVarZ, smoothingTime);
+		rotVec.x = Mathf.SmoothDampAngle (rotation.eulerAngles.x, desireableRotationX, ref smoothDampVarX, smoothingTime);
+		rotVec.y = Input.GetAxis("Horizontal") + (Input.acceleration.x * sensitivity);
+		rotation.eulerAngles = rotVec;
+		//transform.rotation = rotation;
+		rb.MoveRotation(Quaternion.Euler(rotVec));
 
-		float inputX;
-		#if UNITY_EDITOR
-		inputX = Input.GetAxis("Horizontal");
-		#else
-		inputX = Input.acceleration.x * sensitivity;
-		#endif
-		transform.Rotate (new Vector3 (0f, inputX * turningSpeed * Time.deltaTime, 0f));
+		//float inputX = Input.GetAxis("Horizontal") + (Input.acceleration.x * sensitivity);
+		//transform.Rotate (new Vector3 (0f, inputX * turningSpeed * Time.deltaTime, 0f));
 
 	}
 
